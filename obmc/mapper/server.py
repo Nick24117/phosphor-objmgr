@@ -401,10 +401,11 @@ class ObjectMapper(dbus.service.Object):
             del self.bus_map[owner]
 
         for path, item in self.cache.dataitems():
-            old = self.interfaces_get(item, owner)
-            # remove all interfaces for this service
-            self.update_interfaces(
-                path, owner, old=old, new=[])
+            old = self.interfaces_get(item, owned_name)
+            if old:
+                # remove all interfaces for this service
+                self.update_interfaces(
+                    path, owned_name, old=old, new=[])
 
     def bus_handler(self, owned_name, old, new):
         valid = False
