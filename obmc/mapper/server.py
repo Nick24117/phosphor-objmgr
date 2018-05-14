@@ -485,7 +485,19 @@ class ObjectMapper(dbus.service.Object):
 
         return match
 
-    def discover(self, owners=[]):
+    def discovery_error_retry(self, owner, path, e):
+        sys.stderr.write(
+            '{} discovery failure on {} - retry\n'.format(owner, path))
+        find_dbus_interfaces(self.bus, owner, '/',
+                             self.discovery_callback,
+                             self.discovery_error,
+                             subtree_match=self.path_match,
+                             iface_match=self.interface_match)
+
+    def discover(self, owners=None):
+        if owners is None:
+            owners = []
+
         def get_owner(name):
             try:
                 return (name, self.bus.get_name_owner(name))
@@ -523,7 +535,9 @@ class ObjectMapper(dbus.service.Object):
         return filtered
 
     @staticmethod
-    def interfaces_get(item, owner, default=[]):
+    def interfaces_get(item, owner, default=None):
+        if default is None:
+            default = []
         return item.get(owner, default)
 
     @staticmethod
